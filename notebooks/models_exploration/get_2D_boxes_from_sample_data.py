@@ -31,7 +31,7 @@ def threeD_2_twoD(boxsy, intrinsic):
     
     return min_x, min_y, max_x, max_y
 
-def get_2D_boxes_from_sample_data(nusc_object: NuScenes, sample_data_token: str, box_vis_level=BoxVisibility.ANY, selected_anntokens=None):
+def get_2D_boxes_from_sample_data(nusc_object: NuScenes, sample_data_token: str, box_vis_level=BoxVisibility.ANY, visibilities=['1', '2', '3', '4']):
     """
     Recebe um objeto da base de dados NuScenes e um token de sample_data.
 
@@ -59,12 +59,13 @@ def get_2D_boxes_from_sample_data(nusc_object: NuScenes, sample_data_token: str,
         cam_intrinsic = None
         imsize = None
 
-    # Retrieve all sample annotations and map to sensor coordinate system.
-    if selected_anntokens is not None:
-        boxes = list(map(nusc_object.get_box, selected_anntokens))
-    else:
-        boxes = nusc_object.get_boxes(sample_data_token)
-        selected_anntokens = sample_record['anns']
+    boxes = []
+    selected_anntokens = []
+    for ann in sample_record['anns']:
+        ann_record = nusc_object.get('sample_annotation', ann)
+        if ann_record['visibility_token'] in visibilities:
+            boxes.append(nusc_object.get_box(ann_record['token']))
+            selected_anntokens.append(ann)
 
     box_list = []
     ann_list = []
