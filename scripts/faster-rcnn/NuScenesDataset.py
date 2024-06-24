@@ -50,8 +50,6 @@ class NuScenesDataset(Dataset):
                 sample = nusc_object.get('sample', sample_token)
                 self.samples_datas.extend([nusc_object.get('sample_data', sample['data'][sensor]) for sensor in sensors])
                 sample_token = sample['next']
-        
-        self.samples_datas = self.samples_datas[:20]
 
     def __getitem__(self, idx):
         '''
