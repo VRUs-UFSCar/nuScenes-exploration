@@ -4,7 +4,7 @@ import nuscenes
 
 IN_DIR = '../../data'
 
-nusc = nuscenes.NuScenes(version='v1.0', dataroot=IN_DIR, verbose=True)
+nusc = nuscenes.NuScenes(version='v1.0-trainval', dataroot=IN_DIR, verbose=True)
 
 BATCH_SIZE = 25 # increase / decrease according to GPU memory
 RESIZE_PERCENT = 1 # resize the image for training and transforms
