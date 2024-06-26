@@ -9,7 +9,7 @@ IN_DIR = '../../data'
 
 nusc = nuscenes.NuScenes(version='v1.0-mini', dataroot=IN_DIR, verbose=True)
 
-BATCH_SIZE = 10 # increase / decrease according to GPU memory
+BATCH_SIZE = 32 # increase / decrease according to GPU memory
 RESIZE_PERCENT = 1 # resize the image for training and transforms
 NUM_EPOCHS = 10 # number of epochs to train for
 
