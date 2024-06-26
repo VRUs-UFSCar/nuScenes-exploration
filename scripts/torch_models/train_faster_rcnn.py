@@ -66,7 +66,7 @@ from utils.NuScenesDataset import NuScenesDataset
 from torch.utils.data import DataLoader
 from utils.epoch_train import train
 from utils.epoch_validate import validate
-from utils.plot_functions import save_val_train_loss_plot, save_mean_val_train_loss_plot
+from utils.plot_functions import save_val_train_mean_loss_joined_plot
 import time
 from tqdm import tqdm
 import json
@@ -86,10 +86,10 @@ val_loss_mean_list = []
 MODEL_NAME = 'model'
 
 train_dataset = NuScenesDataset(nusc, IN_DIR, TRAIN_NAME, CLASSES, ['1', '2', '3', '4'])
-train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=0, collate_fn=lambda x: tuple(zip(*x)))
+train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, collate_fn=lambda x: tuple(zip(*x)))
 
 valid_dataset = NuScenesDataset(nusc, IN_DIR, VALIDATION_NAME, CLASSES, ['1', '2', '3', '4'])
-valid_loader = DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0, collate_fn=lambda x: tuple(zip(*x)))
+valid_loader = DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, collate_fn=lambda x: tuple(zip(*x)))
 
 # start the training epochs
 for epoch in range(NUM_EPOCHS):
@@ -112,7 +112,7 @@ for epoch in range(NUM_EPOCHS):
         torch.save(model.state_dict(), f"{OUT_DIR}/model{epoch+1}.pth")
     
     if (epoch+1) == NUM_EPOCHS: # save loss plots and model once at the end
-        save_mean_val_train_loss_plot(train_loss_mean_list, val_loss_mean_list, OUT_DIR)
+        save_val_train_mean_loss_joined_plot(train_loss_mean_list, val_loss_mean_list, OUT_DIR)
         torch.save(model.state_dict(), f"{OUT_DIR}/{MODEL_NAME}.pth")
 
 
