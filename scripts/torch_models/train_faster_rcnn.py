@@ -1,9 +1,16 @@
 
+from utils.clear_memory import clear_memory
+clear_memory('/home/gregorio/.cache/torch')
+
+
+
+
 # -------- CONFIGURAÇÕES ---------------
 
 import torch
 import os
 import nuscenes
+from utils.clear_memory import clear_memory
 
 IN_DIR = '../../data'
 
@@ -152,3 +159,7 @@ for i, data in enumerate(prog_bar):
         }
 
 json.dump(json_detections, open(f"{OUT_DIR}/detections.json", 'w'), indent=4)
+
+
+
+clear_memory('/home/gregorio/.cache/torch')
