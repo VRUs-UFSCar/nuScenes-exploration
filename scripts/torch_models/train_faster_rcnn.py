@@ -11,7 +11,7 @@ nusc = nuscenes.NuScenes(version='v1.0-mini', dataroot=IN_DIR, verbose=True)
 
 BATCH_SIZE = 32 # increase / decrease according to GPU memory
 RESIZE_PERCENT = 1 # resize the image for training and transforms
-NUM_EPOCHS = 10 # number of epochs to train for
+NUM_EPOCHS = 100 # number of epochs to train for
 
 
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
@@ -77,7 +77,7 @@ model = create_model(num_classes=NUM_CLASSES)
 model = model.to(DEVICE)
 # define the optimizer
 params = [p for p in model.parameters() if p.requires_grad]
-optimizer = torch.optim.SGD(params, lr=0.001, momentum=0.9, weight_decay=0.0005)
+optimizer = torch.optim.SGD(params, lr=0.0001, momentum=0.9, weight_decay=0.0005)
 # train and validation loss lists to store loss values of all...
 # ... iterations till ena and plot graphs for all iterations
 train_loss_mean_list = []
