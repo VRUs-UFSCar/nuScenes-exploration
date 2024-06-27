@@ -112,7 +112,7 @@ for epoch in range(NUM_EPOCHS):
         torch.save(model.state_dict(), f"{OUT_DIR}/model{epoch+1}.pth")
     
     if (epoch+1) == NUM_EPOCHS: # save loss plots and model once at the end
-        save_val_train_mean_loss_joined_plot(train_loss_mean_list, val_loss_mean_list, OUT_DIR)
+        save_val_train_mean_loss_joined_plot(train_loss_mean_list, val_loss_mean_list, 'Fater R-CNN', OUT_DIR)
         torch.save(model.state_dict(), f"{OUT_DIR}/{MODEL_NAME}.pth")
 
 
