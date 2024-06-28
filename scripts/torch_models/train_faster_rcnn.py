@@ -14,17 +14,17 @@ from utils.clear_memory import clear_memory
 
 IN_DIR = '../../data'
 
-nusc = nuscenes.NuScenes(version='v1.0-trainval', dataroot=IN_DIR, verbose=True)
+nusc = nuscenes.NuScenes(version='v1.0-mini', dataroot=IN_DIR, verbose=True)
 
 BATCH_SIZE = 32 # increase / decrease according to GPU memory
 RESIZE_PERCENT = 1 # resize the image for training and transforms
-NUM_EPOCHS = 10 # number of epochs to train for
+NUM_EPOCHS = 100 # number of epochs to train for
 
 
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-TRAIN_NAME = 'train'
-VALIDATION_NAME = 'val'
+TRAIN_NAME = 'mini_train'
+VALIDATION_NAME = 'mini_val'
 # classes: 0 index is reserved for background
 CLASSES = [
     'background', *[category['name'] for category in nusc.category]
@@ -32,12 +32,12 @@ CLASSES = [
 NUM_CLASSES = len(CLASSES)
 
 
-OUT_DIR = '../../outputs/faster-rcnn/mini'  # location to save model and plots
+OUT_DIR = '../../outputs/faster_rcnn/mini'  # location to save model and plots
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
-SAVE_PLOTS_EPOCH = 2 # save loss plots after these many epochs
-SAVE_MODEL_EPOCH = 2 # save model after these many epochs
+SAVE_PLOTS_EPOCH = 20 # save loss plots after these many epochs
+SAVE_MODEL_EPOCH = 20 # save model after these many epochs
 
 
 
