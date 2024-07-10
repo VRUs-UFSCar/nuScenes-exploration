@@ -10,7 +10,6 @@ clear_memory('/home/gregorio/.cache/torch')
 import torch
 import os
 import nuscenes
-from utils.clear_memory import clear_memory
 
 IN_DIR = '../../data'
 
@@ -36,7 +35,6 @@ OUT_DIR = '../../outputs/faster_rcnn/mini'  # location to save model and plots
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
-SAVE_PLOTS_EPOCH = 20 # save loss plots after these many epochs
 SAVE_MODEL_EPOCH = 20 # save model after these many epochs
 
 
@@ -79,17 +77,15 @@ from tqdm import tqdm
 import json
 
 
-# initialize the model and move to the computation device
+# Inicializa o modelo
 model = create_model(num_classes=NUM_CLASSES)
 model = model.to(DEVICE)
-# define the optimizer
+# Inicializa o otimizador
 params = [p for p in model.parameters() if p.requires_grad]
 optimizer = torch.optim.SGD(params, lr=0.0001, momentum=0.9, weight_decay=0.0005)
-# train and validation loss lists to store loss values of all...
-# ... iterations till ena and plot graphs for all iterations
 train_loss_mean_list = []
 val_loss_mean_list = []
-# name to save the trained model with
+# Nome que será usado para salvar os pesos aprendidos pelo modelo
 MODEL_NAME = 'model'
 
 train_dataset = NuScenesDataset(nusc, IN_DIR, TRAIN_NAME, CLASSES, ['1', '2', '3', '4'])
@@ -98,16 +94,16 @@ train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, nu
 valid_dataset = NuScenesDataset(nusc, IN_DIR, VALIDATION_NAME, CLASSES, ['1', '2', '3', '4'])
 valid_loader = DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, collate_fn=lambda x: tuple(zip(*x)))
 
-# start the training epochs
+# Começa o treinamento
 for epoch in range(NUM_EPOCHS):
     print(f"\nEPOCH {epoch+1} of {NUM_EPOCHS}")
     # start timer and carry out training and validation
     start = time.time()
-    epoch_train_loss_list = train(train_loader, model, optimizer, DEVICE)
+    epoch_train_loss_list = train(train_loader, model, optimizer, DEVICE)  # Treina o modelo
     epoch_val_loss_list = validate(valid_loader, model, DEVICE)
 
     train_loss_mean_list.append(sum(epoch_train_loss_list) / len(train_dataset))
-    val_loss_mean_list.append(sum(epoch_val_loss_list) / len(valid_dataset))
+    val_loss_mean_list.append(sum(epoch_val_loss_list) / len(valid_dataset))  # Avalia o modelo, calculando a loss de validação
 
     print(f"Epoch #{epoch} train loss average: {train_loss_mean_list[-1]:.3f}")   
     print(f"Epoch #{epoch} validation loss average: {val_loss_mean_list[-1]:.3f}")
@@ -115,10 +111,10 @@ for epoch in range(NUM_EPOCHS):
     end = time.time()
     print(f"Took {((end - start) / 60):.3f} minutes for epoch {epoch}")
     
-    if (epoch+1) % SAVE_MODEL_EPOCH == 0: # save model after every n epochs
+    if (epoch+1) % SAVE_MODEL_EPOCH == 0: # Salva o modelo a cada SAVE_MODEL_EPOCH épocas
         torch.save(model.state_dict(), f"{OUT_DIR}/model{epoch+1}.pth")
     
-    if (epoch+1) == NUM_EPOCHS: # save loss plots and model once at the end
+    if (epoch+1) == NUM_EPOCHS: # Salva o modelo e o gráfico de loss ao final do treinamento
         save_val_train_mean_loss_joined_plot(train_loss_mean_list, val_loss_mean_list, 'Fater R-CNN', OUT_DIR)
         torch.save(model.state_dict(), f"{OUT_DIR}/{MODEL_NAME}.pth")
 
@@ -129,35 +125,42 @@ for epoch in range(NUM_EPOCHS):
 
 model.eval()
 
+# Gera um dataloader para a validação
 valid_dataset = NuScenesDataset(nusc, IN_DIR, VALIDATION_NAME, CLASSES, ['1', '2', '3', '4'], return_tokens=True)
 valid_loader = DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0, collate_fn=lambda x: tuple(zip(*x)))
+
 
 print('Generating detections...')
 prog_bar = tqdm(valid_loader, total=len(valid_loader))
 json_detections = {}
-score_threshold = 0.5
+score_threshold = 0.5  # Threshold de score para considerar uma detecção válida
     
 for i, data in enumerate(prog_bar):
     images, targets, tokens = data
     
+    # Adapta os dados para o dispositivo que está sendo usado
     images = list(image.to(DEVICE) for image in images)
     targets = [{k: v.to(DEVICE) for k, v in t.items()} for t in targets]
     
     with torch.no_grad():
-        outputs = model(images)
+        outputs = model(images)  # Faz um forward pass, obtendo as detecções
 
     for output, token in zip(outputs, tokens):
+        # Filtra as detecções com score menor que o threshold e adapta as bounding boxes para serem salvas
         boxes = output['boxes'][output['scores'] > score_threshold]
         boxes = boxes.cpu().numpy().tolist()
 
+        # Traduz os labels com score menor que o threshold e coleta os nomes das classes previstas
         labels = output['labels'][output['scores'] > score_threshold]
         labels = [CLASSES[label] for label in labels.cpu().numpy().tolist()]
         
+        # Salva a detecção de uma imagem
         json_detections[token] = {
             'boxes': boxes,
             'labels': labels
         }
 
+# Salva as detecções em um arquivo json
 json.dump(json_detections, open(f"{OUT_DIR}/detections.json", 'w'), indent=4)
 
 
