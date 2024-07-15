@@ -62,7 +62,7 @@ CLASSES = list(set(CLASSES))
 NUM_CLASSES = len(CLASSES)
 
 
-OUT_DIR = '../../outputs/faster_rcnn-class_filter/full'  # location to save model and plots
+OUT_DIR = '../../outputs/filtered/full'  # location to save model and plots
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
