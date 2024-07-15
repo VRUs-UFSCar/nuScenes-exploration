@@ -13,7 +13,7 @@ import nuscenes
 
 IN_DIR = '../../data'
 
-nusc = nuscenes.NuScenes(version='v1.0-mini', dataroot=IN_DIR, verbose=True)
+nusc = nuscenes.NuScenes(version='v1.0-trainval', dataroot=IN_DIR, verbose=True)  # v1.0-mini | v1.0-trainval
 
 BATCH_SIZE = 32 # increase / decrease according to GPU memory
 RESIZE_PERCENT = 1 # resize the image for training and transforms
@@ -22,16 +22,47 @@ NUM_EPOCHS = 100 # number of epochs to train for
 
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-TRAIN_NAME = 'mini_train'
-VALIDATION_NAME = 'mini_val'
+TRAIN_NAME = 'train'  # mini_train | train
+VALIDATION_NAME = 'val'  # mini_val | val
 # classes: 0 index is reserved for background
-CLASSES = [
-    'background', *[category['name'] for category in nusc.category]
+CLASSES_TO_IGNORE = [
+    'animal',
+    'human.pedestrian.personal_mobility',
+    'human.pedestrian.stroller',
+    'human.pedestrian.wheelchair',
+    'movable_object.debris',
+    'movable_object.pushable_pullable',
+    'static_object.bicycle_rack',
+    'vehicle.emergency.ambulance',
+    'vehicle.emergency.police',
 ]
+
+CLASSES_GROUP_MAPPING = {
+    'background': 'background',
+    'movable_object.barrier': 'barrier',
+    'vehicle.bicycle': 'bycicle',
+    'vehicle.bus.bendy': 'bus',
+    'vehicle.bus.rigid': 'bus',
+    'vehicle.car': 'car',
+    'vehicle.construction': 'construction_vehicle',
+    'vehicle.motorcycle': 'motorcycle',
+    'human.pedestrian.adult': 'pedestrian',
+    'human.pedestrian.child': 'pedestrian',
+    'human.pedestrian.construction_worker': 'pedestrian',
+    'human.pedestrian.police_officer': 'pedestrian',
+    'movable_object.trafficcone': 'traffic_cone',
+    'vehicle.trailer': 'trailer',
+    'vehicle.truck': 'truck',
+}
+
+CLASSES = ['background', *[category['name'] for category in nusc.category]]
+CLASSES = [c for c in CLASSES if c not in CLASSES_TO_IGNORE]
+CLASSES = [CLASSES_GROUP_MAPPING[c] for c in CLASSES]
+CLASSES = list(set(CLASSES))
 NUM_CLASSES = len(CLASSES)
 
 
-OUT_DIR = '../../outputs/faster_rcnn/mini'  # location to save model and plots
+OUT_DIR = '../../outputs/faster_rcnn-class_filter/full'  # location to save model and plots
 
 os.makedirs(OUT_DIR, exist_ok=True)
 
@@ -88,10 +119,10 @@ val_loss_mean_list = []
 # Nome que será usado para salvar os pesos aprendidos pelo modelo
 MODEL_NAME = 'model'
 
-train_dataset = NuScenesDataset(nusc, IN_DIR, TRAIN_NAME, CLASSES, ['1', '2', '3', '4'])
+train_dataset = NuScenesDataset(nusc, IN_DIR, TRAIN_NAME, CLASSES, ['1', '2', '3', '4'], classes_map=CLASSES_GROUP_MAPPING)
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=4, collate_fn=lambda x: tuple(zip(*x)))
 
-valid_dataset = NuScenesDataset(nusc, IN_DIR, VALIDATION_NAME, CLASSES, ['1', '2', '3', '4'])
+valid_dataset = NuScenesDataset(nusc, IN_DIR, VALIDATION_NAME, CLASSES, ['1', '2', '3', '4'], classes_map=CLASSES_GROUP_MAPPING)
 valid_loader = DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=4, collate_fn=lambda x: tuple(zip(*x)))
 
 # Começa o treinamento
@@ -126,7 +157,7 @@ for epoch in range(NUM_EPOCHS):
 model.eval()
 
 # Gera um dataloader para a validação
-valid_dataset = NuScenesDataset(nusc, IN_DIR, VALIDATION_NAME, CLASSES, ['1', '2', '3', '4'], return_tokens=True)
+valid_dataset = NuScenesDataset(nusc, IN_DIR, VALIDATION_NAME, CLASSES, ['1', '2', '3', '4'], classes_map=CLASSES_GROUP_MAPPING, return_tokens=True)
 valid_loader = DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=0, collate_fn=lambda x: tuple(zip(*x)))
 
 
