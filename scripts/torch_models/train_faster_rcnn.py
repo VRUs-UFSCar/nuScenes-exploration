@@ -17,7 +17,7 @@ nusc = nuscenes.NuScenes(version='v1.0-trainval', dataroot=IN_DIR, verbose=True)
 
 BATCH_SIZE = 32 # increase / decrease according to GPU memory
 RESIZE_PERCENT = 1 # resize the image for training and transforms
-NUM_EPOCHS = 100 # number of epochs to train for
+NUM_EPOCHS = 10 # number of epochs to train for
 
 
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
