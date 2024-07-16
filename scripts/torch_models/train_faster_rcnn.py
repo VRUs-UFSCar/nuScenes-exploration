@@ -13,17 +13,17 @@ import nuscenes
 
 IN_DIR = '../../data'
 
-nusc = nuscenes.NuScenes(version='v1.0-trainval', dataroot=IN_DIR, verbose=True)  # v1.0-mini | v1.0-trainval
+nusc = nuscenes.NuScenes(version='v1.0-mini', dataroot=IN_DIR, verbose=True)  # v1.0-mini | v1.0-trainval
 
 BATCH_SIZE = 32 # increase / decrease according to GPU memory
 RESIZE_PERCENT = 1 # resize the image for training and transforms
-NUM_EPOCHS = 10 # number of epochs to train for
+NUM_EPOCHS = 100 # number of epochs to train for
 
 
 DEVICE = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
 
-TRAIN_NAME = 'train'  # mini_train | train
-VALIDATION_NAME = 'val'  # mini_val | val
+TRAIN_NAME = 'mini_train'  # mini_train | train
+VALIDATION_NAME = 'mini_val'  # mini_val | val
 # classes: 0 index is reserved for background
 CLASSES_TO_IGNORE = [
     'animal',
